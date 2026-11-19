@@ -37,7 +37,7 @@
     const s = lesson();
     const pupils = roster(row);
     const school = phase(row);
-    const prepared = special(row) ? s.confirmed !== false : work(row).prep?.status === 'confirmed' || (archived(row) && !work(row).prep);
+    const prepared = special(row) ? s.confirmed !== false : work(row).prep?.status === 'confirmed';
     const reminded = W.state.reminders?.[row.id] ?? (archived(row) || special(row));
     const reviewed = special(row) ? pupils.filter(p => s.feedbackByStudent?.[p.id]?.confirmed).length : 0;
     const feedback = special(row) ? pupils.length > 0 && reviewed === pupils.length : Boolean(f.post.feedback);
@@ -73,12 +73,13 @@
     const f = facts(row), s = status(row);
     const isSpecial = special(row), edit = canEdit(row), completed = s.phase === 'ended';
     const l = lesson(), saved = work(row), pupils = roster(row);
-    const prep = isSpecial ? (l.roomPacket || l.draft || l.packet || {}) : {...window.SessionPrep?.defaults(row), ...saved.prep};
+    const noArchive = archived(row) && !saved.prep;
+    const prep = isSpecial ? (l.roomPacket || l.draft || l.packet || {}) : noArchive ? {} : {...window.SessionPrep?.defaults(row), ...saved.prep};
     const editAction = (key, label) => edit ? action(key, label) : '';
     const plan = isSpecial ? 'prep' : 'prepare/' + row.id;
     const planLink = link(plan, (completed || !edit) ? '查看教学设计' : s.prepared ? '复核备课' : '进入备课');
     const packetCount = prep.common?.length ?? (isSpecial ? 4 : null);
-    const planLabel = s.prepared ? '题包已确认' : saved.prep || l.draft && isSpecial ? '备课草稿待确认' : '待制定教案';
+    const planLabel = noArchive ? '诊断已归档 · 未留存题包' : s.prepared ? '题包已确认' : saved.prep || l.draft && isSpecial ? '备课草稿待确认' : '待制定教案';
     const observations = pupils.map(p => {
       const entries = (l.observations?.[p.id] || []);
       const last = entries.at(-1);
@@ -97,10 +98,10 @@
     if (!isSpecial && s.phase === 'ready' && !s.prepared && edit) teachingActions = link(plan, '先确认题包');
     if (!isSpecial && s.phase !== 'ready') teachingActions = editAction('notes', live ? '记录课堂表现' : '补充课堂记录') + (live ? editAction('end', '确认下课') : '');
     const postComplete = completed && s.homework && s.feedback;
-    const canClose = s.prepared && s.reminded && s.practice && postComplete && f.follow.contact && f.follow.result;
+    const canClose = (s.prepared || noArchive) && s.reminded && s.practice && postComplete && f.follow.contact && f.follow.result;
     const steps = [
       {
-        key:'prepare', name:'课前诊断与备课', done:s.prepared, active:Boolean(f.diagnosis || saved.prep),
+        key:'prepare', name:'课前诊断与备课', done:s.prepared || noArchive, active:Boolean(f.diagnosis || saved.prep),
         summary:planLabel + (packetCount ? ' · ' + packetCount + ' 道共同题' : ''),
         body:'<dl>' + entry('课前诊断', f.diagnosis, '可补充上次作答中的薄弱点或本节要核对的步骤') + entry('本讲目标', prep.goals || (isSpecial ? '逐项去分母，保留分子括号并回代检验。' : '')) +
           (prep.exercise ? entry('共同练习', prep.exercise) : '') + '</dl>',
@@ -158,7 +159,7 @@
       (readOnly ? '<p class="sj-access">当前为只读视图，由' + esc(row.teacher) + '或机构管理员维护本讲记录。</p>' : '') +
       '<ol class="sj-timeline">' + stages.map((stage, i) => {
         const kind = stage.done ? 'done' : stage.active ? 'active' : 'todo';
-        const label = stage.done ? '已完成' : stage.active ? '进行中' : '待办';
+        const label = stage.key === 'prepare' && archived(row) && !work(row).prep ? '已归档' : stage.done ? '已完成' : stage.active ? '进行中' : '待办';
         return '<li class="sj-stage sj-' + kind + '"><span aria-hidden="true" class="sj-marker">' + (stage.done ? W.icon('check', 13) : i + 1) +
           '</span><details' + (stage.key === current ? ' open' : '') + '><summary><div class="sj-stage-title"><h3>' + esc(stage.name) + '</h3><span class="sj-state">' + label +
           '</span></div><span class="sj-description">' + esc(stage.summary) + '</span><span class="sj-chevron">' + W.icon('down', 15) +
@@ -266,7 +267,7 @@
         commit(saved => merge(saved, 'follow', values), '已保存回访与复测记录');
       });
     }
-    if (key === 'close' && s.phase === 'ended' && s.prepared && s.reminded && s.practice && s.homework && s.feedback && f.follow.contact && f.follow.result && !s.closed) {
+    if (key === 'close' && s.phase === 'ended' && (s.prepared || archived(row) && !work(row).prep) && s.reminded && s.practice && s.homework && s.feedback && f.follow.contact && f.follow.result && !s.closed) {
       fieldsModal('确认本讲结项', '本讲的课后作业、家长反馈、回访和复测均已登记，确认后可继续复看完整记录。', [], '确认结项', () => {
         commit(saved => merge(saved, 'follow', {closed:true}), '本讲已结项');
       });
