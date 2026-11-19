@@ -43,5 +43,5 @@
   }
   function go(path){path=String(path||'schedule').replace(/^#/,'');if(location.hash==='#'+path)W.render();else location.hash=path;}
   const W=window.W={state:read(),students,esc,icon,modal,closeModal,toast,save,go,reset(){this.state=defaultState();save();}};
-  window.addEventListener('storage',e=>{if(e.key!==key)return;W.state=read();if(/^#(project|classroom|record)(\/|$)/.test(location.hash)&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))W.render();});
+  window.addEventListener('storage',e=>{if(e.key!==key)return;W.state=read();if((!location.hash || /^#(project|classroom|record|tasks|schedule)(\/|$)/.test(location.hash))&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))W.render();});
 })();

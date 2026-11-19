@@ -148,11 +148,12 @@
     return steps;
   }
 
-  function render(row, container) {
+  function render(row, container, requestedStage) {
     const stages = stageList(row);
     const count = stages.filter(stage => stage.done).length;
     const phaseKey = phase(row);
-    const current = phaseKey === 'live' ? 'delivery' : phaseKey === 'ended' ? (stages[3].done ? 'follow' : 'after') : stages.find(s => !s.done)?.key;
+    const target = stages.some(stage => stage.key === requestedStage) ? requestedStage : '';
+    const current = target || (phaseKey === 'live' ? 'delivery' : phaseKey === 'ended' ? (stages[3].done ? 'follow' : 'after') : stages.find(s => !s.done)?.key);
     const readOnly = !canEdit(row);
     container.innerHTML = '<section class="sj-panel" aria-label="本课次全流程"><div class="sj-heading"><div><h2>课次全流程</h2><p>' +
       (archived(row) ? '历史课次含示例教学记录，回访与复测可继续补录。' : '查看本讲的交付进度，展开阶段可复核记录。') + '</p></div><span class="sj-progress">' + count + ' / ' + stages.length + ' 阶段完成</span></div>' +
@@ -161,7 +162,7 @@
         const kind = stage.done ? 'done' : stage.active ? 'active' : 'todo';
         const label = stage.key === 'prepare' && archived(row) && !work(row).prep ? '已归档' : stage.done ? '已完成' : stage.active ? '进行中' : '待办';
         return '<li class="sj-stage sj-' + kind + '"><span aria-hidden="true" class="sj-marker">' + (stage.done ? W.icon('check', 13) : i + 1) +
-          '</span><details' + (stage.key === current ? ' open' : '') + '><summary><div class="sj-stage-title"><h3>' + esc(stage.name) + '</h3><span class="sj-state">' + label +
+          '</span><details' + (target === stage.key ? ' data-route-stage' : '') + (stage.key === current ? ' open' : '') + '><summary><div class="sj-stage-title"><h3>' + esc(stage.name) + '</h3><span class="sj-state">' + label +
           '</span></div><span class="sj-description">' + esc(stage.summary) + '</span><span class="sj-chevron">' + W.icon('down', 15) +
           '</span></summary><div class="sj-body">' + stage.body + (stage.actions ? '<div class="buttons sj-actions">' + stage.actions + '</div>' : '') +
           '</div></details></li>';

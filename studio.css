@@ -21,3 +21,20 @@
 .tt-course-chooser a { text-decoration: underline; text-underline-offset: 3px; }
 .tt-cell a.tt-month-prep { width: fit-content; padding: 3px 6px; color: var(--green); font-size: 12px; font-weight: 650; background: transparent; border: 0; }
 .tt-cell a.tt-month-prep:hover { text-decoration: underline; }
+
+.tt-feature-status { align-self: center; display: grid; margin: 16px clamp(20px, 4vw, 64px) 16px 0; padding-left: clamp(18px, 3vw, 40px); border-left: 1px solid #71927e; }
+.tt-feature-status div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 5px 0; }
+.tt-feature-status dt { color: #d5e2d2; font-size: 13px; }
+.tt-feature-status dd { color: #fff; font-size: 14px; font-weight: 650; margin: 0; }
+.crumb .nav-parent { color: #355c44; text-underline-offset: 3px; }
+.crumb .nav-parent:hover { text-decoration: underline; }
+.sj-stage details[data-route-stage] { scroll-margin-top: 75px; }
+@media(max-width:760px) {
+  .tt-feature-status { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 17px 14px; padding: 9px 0 0; border: 0; border-top: 1px solid #71927e; gap: 9px; }
+  .tt-feature-status div { display: block; padding: 0; }
+  .tt-feature-status dt { font-size: 12px; }
+  .tt-feature-status dd { font-size: 13px; }
+}
+@media(max-width:420px) {
+  .crumb .nav-parent + b { display: inline; }
+}

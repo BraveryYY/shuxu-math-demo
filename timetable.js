@@ -22,18 +22,18 @@
   const focused=r=>r.id==='eq9';
   const stateOf = row => SessionJourney.phase(row);
   const byDate = [...rows].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-  const isNext = row => stateOf(row) === 'ready' && byDate.find(item => stateOf(item) === 'ready') === row;
-  function phase(row) {
+  const nextReady = (list = byDate) => list.find(row => stateOf(row) === 'ready');
+  function phase(row, next = nextReady()) {
     const state = stateOf(row);
     if (state === 'ended') return row.date < '2026-11-18' ? '已完成' : '已下课';
     if (state === 'live') return '上课中';
-    return isNext(row) ? '最近待上' : '待上课';
+    return row === next ? '最近待上' : '待上课';
   }
   const past = row => stateOf(row) === 'ended';
-  const highlighted = row => stateOf(row) === 'live' || isNext(row);
-  function badge(row) {
-    const label = phase(row);
-    return '<span class="pill ' + (past(row) ? 'gray' : highlighted(row) ? 'amber' : 'blue') + '">' + label + '</span>';
+  const highlighted = (row, next) => stateOf(row) === 'live' || row === next;
+  function badge(row, next = nextReady()) {
+    const label = phase(row, next);
+    return '<span class="pill ' + (past(row) ? 'gray' : highlighted(row, next) ? 'amber' : 'blue') + '">' + label + '</span>';
   }
   const link=(path,label,primary=false)=>'<a class="btn small'+(primary?' primary':'')+'" href="#'+path+'">'+label+'</a>';
   const editable = row => W.state.role === 'admin' || row.teacher === self();
@@ -46,20 +46,40 @@
     if (live && focused(row) && editable(row)) return link('classroom', '继续授课', true) + prep + details;
     return prep + details;
   }
-  const ninth=rows.find(r=>r.id==='eq9');
-  function feature(){
-    const p=phase(ninth);
-    return '<section class="tt-feature"><div class="tt-feature-copy"><p class="eyebrow"><i></i>七年级方程班 · 第 9 讲</p><h2>解一元一次方程：去分母</h2><p>11 月 18 日（周三）　18:30–19:30　<span class="tt-thin">·</span>　201 教室</p><div class="buttons"><a class="btn primary" href="#prep">'+icon('edit',16)+(editable(ninth)?'进入备课':'查看备课')+'</a><a class="btn" href="#'+(p==='已下课'?'feedback':'classroom')+'">'+icon(p==='已下课'?'file':'play',16)+(p==='已下课'?'查看课后反馈':p==='上课中'?'继续授课':'进入课堂')+'</a></div></div><div class="tt-board" aria-label="示例板书：等式两边同乘六"><small>本讲板书 · 等式两边同乘 6</small><p><span class="frac"><span>x + 1</span><span>3</span></span> − <span class="frac"><span>x − 2</span><span>6</span></span> = 2</p><p>2(x + 1) − (x − 2) = 12</p></div></section>';
+  function orderLessons(a, b) {
+    const rank = {live:0, ready:1, ended:2};
+    const byTime = (a.date + a.time).localeCompare(b.date + b.time);
+    return rank[stateOf(a)] - rank[stateOf(b)] || (past(a) ? -byTime : byTime) ||
+      Number(b.teacher === self()) - Number(a.teacher === self());
+  }
+  function feature(row) {
+    if (!row || past(row)) return '';
+    const status = SessionJourney.status(row);
+    const live = status.phase === 'live';
+    const canTeach = editable(row);
+    const delivery = 'session/' + row.id + '/delivery';
+    const prep = link(prepPath(row), canTeach && !live ? '进入备课' : '查看备课', canTeach && !live && !status.prepared);
+    const roomLink = live && canTeach ? link(focused(row) ? 'classroom' : delivery, '继续授课', true) :
+      canTeach && status.prepared ? link(focused(row) ? 'classroom' : delivery, focused(row) ? '开始上课' : '进入授课准备', true) : '';
+    const open = link('session/' + row.id, '课次详情', !canTeach);
+    return '<section class="tt-feature" aria-label="' + (live ? '正在上课' : '下一节课') + '"><div class="tt-feature-copy">' +
+      '<p class="eyebrow"><i></i>' + (live ? '正在上课' : '下一节课') + ' · ' + esc(row.name + ' · ' + row.teacher) + '</p>' +
+      '<h2>第 ' + row.n + ' 讲 · ' + esc(row.title) + '</h2><p>' +
+      esc(dateText(row.date) + '（' + shortDay(row.date) + '） ' + row.time + ' · ' + row.room) + '</p>' +
+      '<div class="buttons">' + roomLink + prep + open + '</div></div>' +
+      '<dl class="tt-feature-status"><div><dt>教学题包</dt><dd>' + (status.prepared ? '已确认' : '待确认') +
+      '</dd></div><div><dt>上课提醒</dt><dd>' + (status.reminded ? '已登记' : '待登记') +
+      '</dd></div><div><dt>课前练习</dt><dd>' + (status.practice ? '已核对' : '待核对') + '</dd></div></dl></section>';
   }
   function viewButtons(layout,options){
     return '<div class="view-switch" role="group" aria-label="显示方式">'+options.map(([id,label,ic])=>'<button type="button" data-layout="'+id+'" aria-pressed="'+(layout===id)+'">'+icon(ic,13)+label+'</button>').join('')+'</div>';
   }
-  function cards(list) {
+  function cards(list, next) {
     const items = list.map(row => {
       const mine = row.teacher === self();
-      const classes = ['tt-card', past(row) && 'finished', mine && 'mine', highlighted(row) && 'current'].filter(Boolean).join(' ');
+      const classes = ['tt-card', past(row) && 'finished', mine && 'mine', highlighted(row, next) && 'current'].filter(Boolean).join(' ');
       return '<article class="' + classes + '" data-session="' + row.id + '">' +
-        '<div class="line"><time datetime="' + row.date + '">' + dateText(row.date) + ' · ' + shortDay(row.date) + '</time>' + badge(row) + '</div>' +
+        '<div class="line"><time datetime="' + row.date + '">' + dateText(row.date) + ' · ' + shortDay(row.date) + '</time>' + badge(row, next) + '</div>' +
         '<h3><a class="tt-card-title" href="#session/' + row.id + '">' + esc(row.name) + ' · ' + esc(row.teacher) + '</a></h3>' +
         '<p class="tt-session-topic">第 ' + row.n + ' 讲 · ' + esc(row.title) + '</p>' +
         '<p>' + row.time + ' · ' + row.room + (mine ? ' · 本人课次' : '') + '</p>' +
@@ -67,30 +87,31 @@
     });
     return '<div class="tt-cards">' + items.join('') + '</div>';
   }
-  function listView(list) {
+  function listView(list, next) {
     return '<div class="card">' + list.map(row => '<article class="tt-row" data-session="' + row.id + '">' +
       '<div><strong>' + dateText(row.date) + '</strong><p>' + row.time + '</p></div>' +
       '<div><h3><a href="#session/' + row.id + '">' + esc(row.name) + ' · ' + esc(row.teacher) + '</a></h3>' +
       '<p>第 ' + row.n + ' 讲 · ' + esc(row.title) + (row.teacher === self() ? ' · 本人课次' : '') + '</p></div>' +
-      '<div>' + badge(row) + '<p>' + esc(SessionJourney.summary(row)) + '</p></div>' +
+      '<div>' + badge(row, next) + '<p>' + esc(SessionJourney.summary(row)) + '</p></div>' +
       '<div class="buttons">' + actions(row) + '</div></article>').join('') + '</div>';
   }
-  function calendar(month,list){
+  function calendar(month, list, next) {
     const [y,m]=month.split('-').map(Number),first=(new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7,days=new Date(Date.UTC(y,m,0)).getUTCDate();
     let html='<div class="table-scroll"><div class="tt-calendar">'+['一','二','三','四','五','六','日'].map(x=>'<strong>周'+x+'</strong>').join('');
     for(let i=0;i<Math.ceil((first+days)/7)*7;i++){
       const n=i-first+1;if(n<1||n>days){html+='<div class="tt-cell blank"></div>';continue;}
       const date=month+'-'+String(n).padStart(2,'0');
-      html+='<div class="tt-cell"><time>'+n+'</time>'+list.filter(r=>r.date===date).map(r=>'<a class="'+(past(r)?'past ':'')+(r.teacher===self()?'mine ':'')+(highlighted(r)?'current':'')+'" href="#session/'+r.id+'" title="'+esc(r.title)+'">'+r.time.slice(0,5)+' '+r.name+'<br>第 '+r.n+' 讲 · '+r.teacher+'</a>'+(!past(r)?'<a class="tt-month-prep" href="#'+prepPath(r)+'" aria-label="查看'+esc(r.name)+'第'+r.n+'讲的备课">'+(editable(r)?'备课':'查看备课')+' →</a>':'')).join('')+'</div>';
+      html+='<div class="tt-cell"><time>'+n+'</time>'+list.filter(r=>r.date===date).map(r=>'<a class="'+(past(r)?'past ':'')+(r.teacher===self()?'mine ':'')+(highlighted(r, next)?'current':'')+'" href="#session/'+r.id+'" title="'+esc(r.title)+'">'+r.time.slice(0,5)+' '+r.name+'<br>第 '+r.n+' 讲 · '+r.teacher+'</a>'+(!past(r)?'<a class="tt-month-prep" href="#'+prepPath(r)+'" aria-label="查看'+esc(r.name)+'第'+r.n+'讲的备课">'+(editable(r)?'备课':'查看备课')+' →</a>':'')).join('')+'</div>';
     }return html+'</div></div><p class="tt-legend">左侧绿线表示本人课次，深绿为最近待上，灰色为已完成。</p>';
   }
   function schedule(){
     const month=W.state.month||'2026-11',layout=W.state.layout||'cards';
     let scope=W.state.scope;if(!scope)scope=W.state.role==='admin'?'all':'mine';
     const filtered=rows.filter(r=>r.date.startsWith(month)&&(scope==='all'||(scope==='mine'?r.teacher===self():r.teacher===scope)));
-    const ordered=[...filtered].sort((a,b)=>Number(past(a))-Number(past(b))||(past(a)?b.date.localeCompare(a.date):a.date.localeCompare(b.date)));
+    const ordered = [...filtered].sort(orderLessons);
+    const next = nextReady(ordered);
     const v=document.querySelector('#view');
-    v.innerHTML='<header class="page-head"><div><p class="eyebrow">'+esc(W.state.orgName)+'</p><h1>教学安排</h1><p>查看机构排课，从本节课进入备课、授课和课后反馈。</p></div></header>'+feature()+'<nav class="tt-mobile-shortcuts" aria-label="工作台快捷入口"><a href="#students">'+icon('users',16)+' 学生档案</a><a href="#pay">'+icon('coins',16)+' 教师课酬</a></nav><section aria-label="机构排课"><div class="panel-bar"><h2>机构课表</h2><span class="tt-weeknote">'+filtered.length+' 个课次</span></div><div class="tt-controls"><div class="tt-ctrlleft"><div class="month-switch"><button class="icon-btn" aria-label="上个月" data-shift="-1">'+icon('left',16)+'</button><strong>'+monthTitle(month)+'</strong><button class="icon-btn" aria-label="下个月" data-shift="1">'+icon('chevron',16)+'</button></div>'+(month!=='2026-11'?'<button class="btn small" data-today>演示月份</button>':'')+'</div><div class="tt-ctrlright"><select aria-label="筛选教师" id="scope">'+[['all','全部教师'],['mine','本人课次'],...['陈老师','孙老师','周老师'].map(t=>[t,t])].map(([id,label])=>'<option value="'+id+'"'+(scope===id?' selected':'')+'>'+label+'</option>').join('')+'</select>'+viewButtons(layout,[['cards','卡片','grid'],['list','列表','list'],['month','月表','table']])+'</div></div>'+(layout==='month'?calendar(month,filtered):!filtered.length?'<div class="card tt-empty">所选月份和教师暂无排课。</div>':layout==='list'?listView(ordered):cards(ordered))+'</section>';
+    v.innerHTML='<header class="page-head"><div><p class="eyebrow">'+esc(W.state.orgName)+'</p><h1>教学安排</h1><p>查看机构排课，从本节课进入备课、授课和课后反馈。</p></div></header>'+feature(ordered[0])+'<nav class="tt-mobile-shortcuts" aria-label="工作台快捷入口"><a href="#tasks">'+icon('list',16)+' 教学待办</a><a href="#catalog">'+icon('book',16)+' 课程与班级</a><a href="#students">'+icon('users',16)+' 学生档案</a></nav><section aria-label="机构排课"><div class="panel-bar"><h2>机构课表</h2><span class="tt-weeknote">'+filtered.length+' 个课次</span></div><div class="tt-controls"><div class="tt-ctrlleft"><div class="month-switch"><button class="icon-btn" aria-label="上个月" data-shift="-1">'+icon('left',16)+'</button><strong>'+monthTitle(month)+'</strong><button class="icon-btn" aria-label="下个月" data-shift="1">'+icon('chevron',16)+'</button></div>'+(month!=='2026-11'?'<button class="btn small" data-today>演示月份</button>':'')+'</div><div class="tt-ctrlright"><select aria-label="筛选教师" id="scope">'+[['all','全部教师'],['mine','本人课次'],...['陈老师','孙老师','周老师'].map(t=>[t,t])].map(([id,label])=>'<option value="'+id+'"'+(scope===id?' selected':'')+'>'+label+'</option>').join('')+'</select>'+viewButtons(layout,[['cards','卡片','grid'],['list','列表','list'],['month','月表','table']])+'</div></div>'+(layout==='month'?calendar(month,filtered,next):!filtered.length?'<div class="card tt-empty">所选月份和教师暂无排课。</div>':layout==='list'?listView(ordered,next):cards(ordered,next))+'</section>';
     v.querySelectorAll('[data-shift]').forEach(b=>b.onclick=()=>{const [y,m]=month.split('-').map(Number);W.state.month=new Date(Date.UTC(y,m-1+Number(b.dataset.shift),1)).toISOString().slice(0,7);W.save();schedule();});
     const reset=v.querySelector('[data-today]');if(reset)reset.onclick=()=>{W.state.month='2026-11';W.save();schedule();};
     v.querySelector('#scope').onchange=e=>{W.state.scope=e.target.value;W.save();schedule();};
@@ -136,10 +157,11 @@
   function unavailable() {
     document.getElementById('view').innerHTML = '<a class="page-back" href="#schedule">← 教学安排</a><h1>未找到这节课</h1><p>请从机构课表选择课次。</p>';
   }
-  function session(row) {
+  function session(row, stage) {
     const root = document.getElementById('view');
     const studentLinks = (editable(row) ? row.students : []).map(id => link('student/' + id, W.students.find(student => student.id === id).name));
-    root.innerHTML = '<a class="page-back" href="#schedule">← 教学安排</a><header class="page-head"><div>' +
+    const back = W.lessonReturn();
+    root.innerHTML = '<a class="page-back" href="#' + esc(back.path) + '">← ' + esc(back.label) + '</a><header class="page-head"><div>' +
       '<p class="eyebrow">' + esc(row.name + ' · ' + row.teacher) + '</p><h1>第 ' + row.n + ' 讲 · ' + esc(row.title) + '</h1>' +
       '<p>' + dateText(row.date) + ' ' + shortDay(row.date) + ' · ' + row.time + ' · ' + row.room + '</p></div>' +
       badge(row) + '</header><div data-session-journey></div>' +
@@ -147,15 +169,15 @@
       link('class/' + row.group, '查看班级') + link('course/' + row.group + '/' + row.id, '课程详情') + '</div>' +
       (studentLinks.length ? '<details class="tt-details"><summary>班级学员（' + studentLinks.length +
         '）</summary><div class="buttons section-space">' + studentLinks.join('') + '</div></details>' : '') + '</section>';
-    SessionJourney.render(row, root.querySelector('[data-session-journey]'));
+    SessionJourney.render(row, root.querySelector('[data-session-journey]'), stage);
   }
-  window.DemoSchedule = {render(section, parts) {
+  window.DemoSchedule = {sessions:rows, teacherName:self, render(section, parts) {
     if (section === 'catalog') return catalog();
     if (section === 'course' || section === 'class') return detail(section, parts[0], parts[1]);
     if (section === 'session' || section === 'prepare') {
       const row = rows.find(item => item.id === parts[0]);
       if (!row) return unavailable();
-      if (section === 'session') return session(row);
+      if (section === 'session') return session(row, parts[1]);
       if (focused(row)) return W.go('prep');
       return SessionPrep.render(row);
     }
