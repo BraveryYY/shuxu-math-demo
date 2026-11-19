@@ -4,9 +4,9 @@
     ['教学工作区',[['schedule','教学安排','calendar'],['prep','第 9 讲备课','edit'],['classroom','课堂授课','board'],['catalog','课程与班级','book'],['students','学生档案','users']]],
     ['机构管理',[['pay','教师课酬','coins'],['settings','教学设置','settings']]]
   ];
-  const rootNav={class:'catalog',course:'catalog',session:'schedule',project:'classroom',record:'classroom',feedback:'classroom',student:'students',exam:'students'};
+  const rootNav={prepare:'schedule',class:'catalog',course:'catalog',session:'schedule',project:'classroom',record:'classroom',feedback:'classroom',student:'students',exam:'students'};
   const aliases={'exam-demo':'exam',lesson:'prep',mobile:'record',finance:'pay',members:'settings',models:'settings',institution:'settings'};
-  const more={session:'课次详情',class:'班级详情',course:'课程详情',project:'课堂投屏',record:'记录作答',feedback:'课后反馈',student:'学生个人档案',exam:'模拟试卷批阅'};
+  const more={prepare:'课次备课',session:'课次详情',class:'班级详情',course:'课程详情',project:'课堂投屏',record:'记录作答',feedback:'课后反馈',student:'学生个人档案',exam:'模拟试卷批阅'};
   const $=s=>document.querySelector(s),{icon,esc}=W;
   const pages=Object.fromEntries(nav.flatMap(([,items])=>items.map(([key,name])=>[key,name])));
   function route(){
@@ -40,9 +40,10 @@
   }
   function render(){
     const [key,parts]=route();hideMenu();shell(key);
-    if(['schedule','session','class','course','catalog'].includes(key))DemoSchedule.render(key,parts);
+    if(['schedule','session','prepare','class','course','catalog'].includes(key))DemoSchedule.render(key,parts);
     else if(['prep','classroom','project','record','feedback'].includes(key)){
       if(W.state.role==='admin')DemoLesson.render(key,parts);
+      else if(key==='prep')DemoLesson.previewPlan();
       else{
         document.body.classList.remove('project-only');
         $('#view').innerHTML='<a class="page-back" href="#schedule">← 教学安排</a><section class="card"><p class="eyebrow">七年级方程班 · 第 9 讲</p><h1>解一元一次方程：去分母</h1><p class="section-space">本节课由陈老师负责。当前是孙老师的任课视角，可查看课次安排，或切换到陈老师体验备课与课堂记录。</p><div class="buttons section-space"><button class="btn primary" id="view-as-chen">以陈老师体验本讲</button><a class="btn" href="#session/eq9">查看课次安排</a></div></section>';

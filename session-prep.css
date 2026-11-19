@@ -1,0 +1,13 @@
+.sp-form{display:grid;gap:16px;max-width:920px}
+.sp-heading,.sp-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sp-actions{justify-content:flex-end}
+.sp-heading h2,.sp-form h2,.sp-field h3{margin:0}
+.sp-field{display:grid;gap:7px;margin-top:18px}
+.sp-field>span,.sp-field h3{font-size:14px;font-weight:650;color:var(--ink)}
+.sp-field textarea{width:100%;min-width:0;resize:vertical;font:inherit;line-height:1.65;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.sp-field textarea:focus{outline:2px solid var(--green);outline-offset:2px}
+.sp-readonly{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.sp-message:empty{display:none}
+.sp-message{color:#8b451d;font-weight:600}
+.sp-empty .btn{margin-top:8px}
+@media(max-width:600px){.sp-field textarea{font-size:16px}.sp-actions .btn{flex:1}.sp-form{gap:12px}}

@@ -6,3 +6,18 @@
 
 
 .tt-mobile-shortcuts{display:none}@media(max-width:760px){.tt-mobile-shortcuts{display:flex;gap:10px;flex-wrap:wrap;margin:-9px 0 23px}.tt-mobile-shortcuts a{display:flex;align-items:center;gap:7px;color:#355e43;border:1px solid #d3dfd5;padding:7px 12px;border-radius:7px;background:#fff;font-size:13px}}
+
+.tt-card { position: relative; }
+.tt-card-title { color: inherit; }
+.tt-card-title::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }
+.tt-card-title:focus-visible::after { outline: 2px solid #438260; outline-offset: 3px; }
+.tt-card:hover .tt-card-title, .tt-row h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.tt-card .buttons { width: fit-content; position: relative; z-index: 1; }
+.tt-card .tt-session-topic { color: var(--ink); font-size: 14px; font-weight: 600; }
+.tt-card.finished .tt-session-topic { color: var(--muted); }
+.tt-course-chooser { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 16px; }
+.tt-course-chooser label { font-weight: 650; }
+.tt-course-chooser select { min-height: 40px; width: min(100%, 340px); }
+.tt-course-chooser a { text-decoration: underline; text-underline-offset: 3px; }
+.tt-cell a.tt-month-prep { width: fit-content; padding: 3px 6px; color: var(--green); font-size: 12px; font-weight: 650; background: transparent; border: 0; }
+.tt-cell a.tt-month-prep:hover { text-decoration: underline; }

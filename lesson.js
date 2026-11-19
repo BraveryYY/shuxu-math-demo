@@ -72,7 +72,7 @@
     if(page==='plan')body='<div class="lp-cols"><section class="card lp-panel"><div class="lp-section"><h2>本讲目标</h2>'+btn('edit-plan','编辑目标与步骤')+'</div><ol class="lp-goals">'+lines(d.goals)+'</ol><h2>教学步骤</h2><ol class="lp-steps">'+lines(d.steps)+'</ol><div class="buttons">'+link('prep/packet','查看教学题包 →',true)+'</div></section><aside class="card lp-panel"><div class="eyebrow">课堂板书 · 课件预览</div><h2>让整数项也乘上公分母</h2><div class="lp-board"><span>原方程</span><b>x/3 + 2 = 5</b><span>两边每一项都乘 3</span><b>x + 6 = 15</b></div><p>先让全班说出 2 为什么变成 6，再对照个人课前练习。</p></aside></div>';
     if(page==='packet')body='<div class="lp-cols"><section class="card lp-panel"><h2>全班共同题</h2>'+d.common.map((q,i)=>'<article class="lp-item"><div class="lp-section"><span class="lp-number">0'+(i+1)+' / '+esc(q.title)+'</span>'+btn('cq-'+i,'编辑')+'</div><h3>'+esc(q.text)+'</h3><p>'+esc(q.method)+'</p><p class="lp-why"><b>选择原因</b> '+esc(q.why)+'</p></article>').join('')+'</section><aside class="card lp-panel"><div class="lp-section"><h2>个人练习</h2>'+studentPicker(s,'学生')+'</div>'+['pre','post'].map((phase,i)=>'<article class="lp-item"><div class="lp-section"><h3>'+(i?'课后':'课前')+'个性题</h3>'+btn('edit-'+phase,'修改题目')+'</div><p>'+esc(d.individual[p.id][phase])+'</p><p class="lp-why"><b>选择原因</b> '+esc(d.individual[p.id][phase+'Why'])+'</p></article>').join('')+'<div class="buttons">' +btn('variant','生成模拟变式')+link('prep/parent','家长预览')+'</div></aside></div>';
     if(page==='parent')body='<div class="lp-cols"><section class="card lp-panel">'+studentPicker(s,'预览学生')+previewSheet(p,s,d)+'</section><aside class="card lp-panel"><h2>打印练习单</h2><p>每名学生一份，包含本人的课前题、全班共同题和本人的课后题，留有书写空间。</p><p class="muted">'+(s.confirmed?'可在系统打印窗口中选择打印或存储为 PDF。':'请先确认最新题包，再打印练习单。')+'</p><div class="buttons">'+(s.confirmed?btn('print-one','打印个人练习单',true)+btn('print-all','打印全班练习单'):btn('confirm','确认题包',true))+'</div></aside></div>';
-    root().innerHTML='<div class="lp">'+title('七年级数学 / 第 9 讲备课',lessonName,'班课 · 陈老师 · 60 分钟',link('schedule','教学安排')+link('classroom','进入授课',true))+'<div class="lp-strip"><span class="pill">'+(s.confirmed?'题包已确认':'题包有待确认修改')+'</span><span>4 道共同题 · '+W.students.length+' 份个性练习</span><div class="buttons">'+(!s.confirmed?btn('confirm','确认题包',true):'')+'</div></div><nav class="lp-tabs">'+[['plan','教学设计'],['packet','教学题包'],['parent','家长预览与打印']].map(([key,t])=>'<a href="#prep/'+key+'" '+(key===page?'aria-current="page"':'')+'>'+t+'</a>').join('')+'</nav>'+body+'</div>';
+    root().innerHTML='<div class="lp">'+title('七年级数学 / 第 9 讲备课',lessonName,'班课 · 陈老师 · 60 分钟',link('session/eq9','课次全流程')+link('classroom','进入授课',true))+'<div class="lp-strip"><span class="pill">'+(s.confirmed?'题包已确认':'题包有待确认修改')+'</span><span>4 道共同题 · '+W.students.length+' 份个性练习</span><div class="buttons">'+(!s.confirmed?btn('confirm','确认题包',true):'')+'</div></div><nav class="lp-tabs">'+[['plan','教学设计'],['packet','教学题包'],['parent','家长预览与打印']].map(([key,t])=>'<a href="#prep/'+key+'" '+(key===page?'aria-current="page"':'')+'>'+t+'</a>').join('')+'</nav>'+body+'</div>';
     const again=()=>prep(s,[page]);
     use('edit-plan',()=>editFields('编辑教学设计',[['goals','本讲目标（每行一项）',d.goals],['steps','教学步骤（每行一步）',d.steps]],res=>{Object.assign(d,res);draftEdited(s);again();}));
     d.common.forEach((q,i)=>use('cq-'+i,()=>editFields('编辑共同题 '+(i+1),[['text','题目',q.text],['first','参考第一行',q.first],['method','讲解方案',q.method],['why','选择原因',q.why]],res=>{Object.assign(q,res);draftEdited(s);again();})));
@@ -114,7 +114,7 @@
         delete s.feedbackDrafts[p.id];delete s.feedbackByStudent[p.id];W.save();W.toast('已记录'+p.name+'的第 '+(idx+1)+' 题');W.go('classroom');};
       pickStudent(s,()=>liveView(s,mode));
     }else{
-      root().innerHTML='<div class="lp">'+title('七年级数学 / 第 9 讲授课',lessonName,(s.phase==='ended'?'已下课 · 课堂回顾':'上课中 · 逐题讲解与观察')+' · 陈老师',link('prep','查看备课')+link('project','打开投屏',true))+
+      root().innerHTML='<div class="lp">'+title('七年级数学 / 第 9 讲授课',lessonName,(s.phase==='ended'?'已下课 · 课堂回顾':'上课中 · 逐题讲解与观察')+' · 陈老师',link('session/eq9','课次全流程')+link('prep','查看备课')+link('project','打开投屏',true))+
         (!s.confirmed||JSON.stringify(s.packet)!==JSON.stringify(room)?'<p class="lp-why">本次课堂使用开课时已确认的题包。你可以在备课页面查看后续修改。</p>':'')+
         '<div class="lp-live-grid"><section class="card lp-panel">'+nav+board+controls+'</section><aside class="card lp-panel"><div class="lp-section"><h2>本题学生记录</h2><span class="pill">'+count+' / '+W.students.length+'</span></div><p class="muted">选择学生，记下实际写出的第一行和错因。</p>'+W.students.map(st=>{const o=response(st);return '<button type="button" data-person="'+esc(st.id)+'" class="lp-roll"><strong>'+esc(st.name)+'</strong><span>'+(o?o.verdict==='correct'?'第一行正确':'有误 · '+esc(o.cause):'待记录')+' ›</span></button>';}).join('')+'<div class="buttons">'+(s.phase==='ended'?link('feedback','课后题与反馈',true):btn('finish','下课并准备反馈',true))+'</div></aside></div></div>';
       root().querySelectorAll('[data-person]').forEach(el=>el.onclick=()=>{s.student=el.dataset.person;W.save();W.go('record');});
@@ -140,11 +140,11 @@
   }
   function feedback(s){
     if(s.phase!=='ended'){
-      root().innerHTML='<div class="lp">'+title('七年级数学 / 第 9 讲','课后题与家长反馈','本讲结束后，可按学生作答生成并确认反馈。',link('classroom',s.phase==='live'?'继续课堂记录':'进入课堂',true))+'</div>';
+      root().innerHTML='<div class="lp">'+title('七年级数学 / 第 9 讲','课后题与家长反馈','本讲结束后，可按学生作答生成并确认反馈。',link('session/eq9','课次全流程')+link('classroom',s.phase==='live'?'继续课堂记录':'进入课堂',true))+'</div>';
       return;
     }
     const p=person(s), obs=s.observations[p.id],published=s.feedbackByStudent[p.id],data=s.feedbackDrafts[p.id] || published;
-    root().innerHTML='<div class="lp">'+title('七年级数学 / 第 9 讲','课后题与家长反馈','模拟生成会读取本机保存的课堂记录，老师确认后写入学生档案。',link('classroom','课堂回顾'))+'<div class="lp-cols"><section class="card lp-panel"><div class="lp-section"><h2>课堂依据</h2>'+studentPicker(s,'学生')+'</div>'+(obs.length?obs.map(o=>'<article class="lp-item"><small>第 '+(o.index+1)+' 题 · '+(o.verdict==='correct'?'正确':'有误')+'</small><h3>'+esc(o.firstLine)+'</h3><p>'+esc(o.cause||'第一行已核对正确。')+'</p></article>').join(''):'<p class="lp-why">尚无该学生的课堂记录。</p>')+'</section><section class="card lp-panel"><div class="lp-section"><h2>个性复测与反馈</h2><span class="pill">'+(s.feedbackDrafts[p.id]?'待确认':published?'已确认':'待生成')+'</span></div><div class="buttons">'+btn('generate',data?'根据记录重新生成':'生成模拟建议',!data)+'</div>'+(data?'<form id="lp-feedback" class="lp-form"><label>调整后的课后题<textarea name="practice" required maxlength="3000">'+esc(data.practice)+'</textarea></label><label>给家长的反馈<textarea name="text" required maxlength="3000">'+esc(data.text)+'</textarea></label><div class="buttons"><button class="btn primary">确认并写入档案</button></div></form>':'<p class="muted">生成后可修改课后题与反馈用语。</p>')+'</section></div></div>';
+    root().innerHTML='<div class="lp">'+title('七年级数学 / 第 9 讲','课后题与家长反馈','模拟生成会读取本机保存的课堂记录，老师确认后写入学生档案。',link('session/eq9','课次全流程')+link('classroom','课堂回顾'))+'<div class="lp-cols"><section class="card lp-panel"><div class="lp-section"><h2>课堂依据</h2>'+studentPicker(s,'学生')+'</div>'+(obs.length?obs.map(o=>'<article class="lp-item"><small>第 '+(o.index+1)+' 题 · '+(o.verdict==='correct'?'正确':'有误')+'</small><h3>'+esc(o.firstLine)+'</h3><p>'+esc(o.cause||'第一行已核对正确。')+'</p></article>').join(''):'<p class="lp-why">尚无该学生的课堂记录。</p>')+'</section><section class="card lp-panel"><div class="lp-section"><h2>个性复测与反馈</h2><span class="pill">'+(s.feedbackDrafts[p.id]?'待确认':published?'已确认':'待生成')+'</span></div><div class="buttons">'+btn('generate',data?'根据记录重新生成':'生成模拟建议',!data)+'</div>'+(data?'<form id="lp-feedback" class="lp-form"><label>调整后的课后题<textarea name="practice" required maxlength="3000">'+esc(data.practice)+'</textarea></label><label>给家长的反馈<textarea name="text" required maxlength="3000">'+esc(data.text)+'</textarea></label><div class="buttons"><button class="btn primary">确认并写入档案</button></div></form>':'<p class="muted">生成后可修改课后题与反馈用语。</p>')+'</section></div></div>';
     pickStudent(s,()=>feedback(s));
     use('generate',()=>{s.feedbackDrafts[p.id]=generate(s,p);W.save();feedback(s);});
     const f=val('lp-feedback');
@@ -159,5 +159,17 @@
     if(!s.roomPacket){s.roomPacket=copy(s.packet);s.phase='live';W.save();}
     liveView(s,section);
   }
-  window.DemoLesson={render};
+  function previewPlan() {
+    const s = state();
+    const p = selectedPacket(s);
+    const questions = p.common.map((question, i) => '<article class="lp-item"><small>共同题 ' + (i + 1) +
+      '</small><h3>' + esc(question.text) + '</h3><p>' + esc(question.method) + '</p><p class="lp-why">' +
+      esc(question.why) + '</p></article>').join('');
+    root().innerHTML = '<div class="lp">' + title('七年级方程班 · 陈老师', lessonName,
+      '本机构备课预览 · 由任课老师维护', link('session/eq9', '课次全流程')) +
+      '<div class="lp-cols"><section class="card lp-panel"><h2>本讲目标</h2><ol class="lp-goals">' + lines(p.goals) +
+      '</ol><h2>教学步骤</h2><ol class="lp-steps">' + lines(p.steps) + '</ol></section>' +
+      '<section class="card lp-panel"><h2>已确认的全班共同题</h2>' + questions + '</section></div></div>';
+  }
+  window.DemoLesson={render, previewPlan};
 })();
