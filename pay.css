@@ -1,0 +1,76 @@
+.pay-page { --pay-green:#19563f; --pay-faint:#edf4ee; --pay-line:#dce5dd; --pay-muted:#64726a; }
+.pay-page h1,.pay-page h2,.pay-page h3,.pay-form h3 { margin:0; }
+.pay-page h2 { font-size:19px; line-height:1.4; }
+.pay-page .pay-dim,.pay-form .pay-dim,.pay-context { color:var(--pay-muted,#62716a); font-size:13px; line-height:1.55; }
+.pay-toolbar,.pay-month,.pay-teacher-pick,.pay-rule-head,.pay-overview header,.pay-detail header,.pay-equation,.pay-page .buttons,.pay-form .buttons { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.pay-toolbar { justify-content:space-between; margin:20px 0 16px; }
+.pay-month { gap:4px; }
+.pay-month .btn { font-size:19px; min-width:37px; padding:4px 10px; }
+.pay-month input,.pay-teacher-pick select,.pay-field input,.pay-field textarea { border:1px solid #cbd8ce; border-radius:7px; background:white; color:#24392d; font:inherit; padding:8px 10px; }
+.pay-month input,.pay-teacher-pick select { font-size:14px; min-height:37px; }
+.pay-teacher-pick,.pay-scope { font-size:13px; color:var(--pay-muted); }
+.pay-kpis { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:17px; }
+.pay-kpis>div { display:grid; align-content:start; gap:5px; padding:18px clamp(13px,2vw,22px); border:1px solid var(--pay-line); border-radius:13px; background:#fff; }
+.pay-kpis>div:first-child { background:var(--pay-faint); border-color:#c5d8ca; }
+.pay-kpis span { font-size:13px; color:#495d50; font-weight:600; }
+.pay-kpis strong { font-size:clamp(21px,2.6vw,35px); color:#204e35; line-height:1.28; font-variant-numeric:tabular-nums; }
+.pay-kpis small { font-size:12px; color:var(--pay-muted); }
+.pay-overview,.pay-detail { background:#fff; padding:0!important; margin-bottom:18px; min-width:0; }
+.pay-overview header,.pay-detail header { justify-content:space-between; padding:17px clamp(14px,2vw,23px); border-bottom:1px solid var(--pay-line); }
+.pay-detail header h2 small { font-size:14px; font-weight:500; color:var(--pay-muted); }
+.pay-detail .eyebrow { display:block; margin:0 0 5px; }
+.pay-scroll { overflow:auto; }
+.pay-sr { position:absolute; width:1px; height:1px; padding:0; border:0; overflow:hidden; clip-path:inset(50%); }
+.pay-table,.pay-detail-table { width:100%; border-collapse:collapse; text-align:left; font-size:14px; font-variant-numeric:tabular-nums; }
+.pay-table { min-width:620px; }
+.pay-table th,.pay-detail-table th { font-size:12px; font-weight:600; color:#5f7166; background:#f5f7f3; }
+.pay-table :is(td,th),.pay-detail-table :is(td,th) { padding:11px clamp(10px,1.5vw,20px); border-bottom:1px solid #e5ebe5; }
+.pay-table tbody tr:last-child td,.pay-detail-table tbody tr:last-child td { border-bottom:0; }
+.pay-table tbody small,.pay-detail-table tbody small,.pay-unit-choices small { display:block; font-size:12px; margin-top:3px; color:var(--pay-muted,#65746a); }
+.pay-current { background:#f7faf4; }
+.pay-current td:first-child { box-shadow:inset 3px 0 #568367; }
+.pay-link { color:var(--pay-green); font-size:13px; font-weight:650; background:transparent; border:0; padding:5px 0; cursor:pointer; white-space:nowrap; }
+.pay-link:hover { text-decoration:underline; }
+.pay-badge { display:inline-block; font-size:12px; line-height:1.5; padding:3px 8px; border-radius:20px; background:#eef1ee; color:#46564b; white-space:nowrap; }
+.pay-status-pending { background:#faf0d9; color:#775c1d; }
+.pay-status-checked { background:#e7edf7; color:#405b84; }
+.pay-status-settled { background:#e5f1e8; color:#2c6640; }
+.pay-equation { background:#f1f5ed; color:#254a33; padding:12px 15px; border-radius:8px; margin:15px clamp(14px,2vw,23px); }
+.pay-equation span,.pay-equation small { font-size:12px; color:#526b57; }
+.pay-equation strong { font-size:15px; }
+.pay-equation small { margin-left:auto; }
+.pay-detail-table { min-width:295px; }
+.pay-rule { border-top:1px solid var(--pay-line); padding:16px clamp(14px,2vw,23px); }
+.pay-rule-head { justify-content:space-between; }
+.pay-rule h3 { font-size:16px; }
+.pay-rule>p { margin:9px 0 5px; }
+.pay-rule details { border-top:1px dashed #d9e3da; margin-top:15px; padding-top:10px; }
+.pay-rule summary { cursor:pointer; color:#375d43; font-size:13px; }
+.pay-history,.pay-audit { margin:8px 0; padding-left:16px; font-size:13px; color:#465e4e; }
+.pay-history li { margin-bottom:9px; }
+.pay-history span { margin-left:8px; color:var(--pay-muted); }
+.pay-history p { margin:3px 0; }
+.pay-audit { margin:12px 24px 16px; }
+.pay-empty { margin:15px 20px; color:var(--pay-muted); font-size:14px; }
+.pay-form { display:grid; gap:13px; color:#263e2f; }
+.pay-context { margin:-3px 0 3px; }
+.pay-field { display:grid; gap:5px; font-size:14px; }
+.pay-field span,.pay-unit-choices legend { font-size:13px; font-weight:650; }
+.pay-field :is(input,textarea) { width:100%; min-width:0; }
+.pay-form .buttons { justify-content:flex-end; }
+.pay-unit-choices { margin:0; border:1px solid #d6dfd7; border-radius:8px; padding:8px 12px; }
+.pay-unit-choices label { display:flex; align-items:center; gap:10px; padding:7px 0; }
+.pay-unit-choices input { accent-color:#245b3d; }
+.pay-unit-choices label + label { border-top:1px solid #e6ece5; }
+.pay-form .pay-equation { margin:0; font-size:14px; }
+.pay-error { color:#97421f; font-size:13px; margin:0; }
+.pay-error:empty { display:none; }
+@media (max-width:650px) {
+  .pay-kpis { gap:6px; }
+  .pay-kpis>div { padding:10px 8px; border-radius:8px; }
+  .pay-kpis span { font-size:11px; }
+  .pay-kpis strong { font-size:clamp(16px,4.3vw,23px); word-break:break-word; }
+  .pay-kpis small { display:none; }
+  .pay-equation small { margin-left:0; }
+  .pay-detail header { align-items:flex-start; }
+}
